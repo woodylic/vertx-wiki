@@ -1,4 +1,4 @@
-package io.vertx.wiki;
+package io.vertx.guides.wiki;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
