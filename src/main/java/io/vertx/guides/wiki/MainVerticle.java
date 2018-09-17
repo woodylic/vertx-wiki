@@ -31,19 +31,37 @@ public class MainVerticle extends AbstractVerticle {
     // once a verticle is deployed it gets an identifier,
     // we use a String to capture it.
     Future<String> dbVerticleDeployment = Future.future();
+
+    // One option is to create a verticle instance with new,
+    // and pass the object reference to the deploy method.
+    // The completer return value is a handler that simply
+    // completes its future.
     vertx.deployVerticle(new WikiDatabaseVerticle(), dbVerticleDeployment.completer());
 
+    // Sequential composition with compose allows to
+    // run one asynchronous operation after the other.
+    // When the initial future completes successfully,
+    // the composition function is invoked.
     dbVerticleDeployment.compose(id -> {
 
       Future<String> httpVerticleDeployment = Future.future();
       vertx.deployVerticle(
+        // A class name as a string is also an option
+        // to specify a verticle to deploy.
         "io.vertx.guides.wiki.HttpServerVerticle",
+        // The DeploymentOption class allows to specify
+        // a number of parameters and especially the number
+        // of instances to deploy.
         new DeploymentOptions().setInstances(2),
         httpVerticleDeployment.completer());
 
+        // The composition function returns the next future.
+        // Its completion will trigger the completion of
+        // the composite operation.
         return httpVerticleDeployment;
 
     }).setHandler(ar -> {
+      // define a handler that eventually completes the MainVerticle start future.
       if(ar.succeeded()) {
         startFuture.complete();
       } else {
